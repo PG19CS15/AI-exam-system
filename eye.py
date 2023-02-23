@@ -1,23 +1,50 @@
 import numpy as np
 import cv2
 import dlib
+
+
 def shape_to_np(shape, dtype="int"):
     coords = np.zeros((68, 2), dtype=dtype)
     for i in range(0, 68):
         coords[i] = (shape.part(i).x, shape.part(i).y)
     return coords
+
+
 def eye_on_mask(mask, side):
     points = [shape[i] for i in side]
     points = np.array(points, dtype=np.int32)
     mask = cv2.fillConvexPoly(mask, points, 255)
     return mask
+
+
 cap = cv2.VideoCapture(0)
 ret, img = cap.read()
 thresh = img.copy()
 cv2.namedWindow('Live')
 kernel = np.ones((9, 9), np.uint8)
+
+
+def contouring(thresh, mid, img, right=False):
+    cnts, _ = cv2.findContours(
+        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    try:
+        # finding contour with #maximum area
+        cnt = max(cnts, key=cv2.contourArea)
+        M = cv2.moments(cnt)
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        if right:
+            cx += mid  # Adding value of mid to x coordinate of centre of #right eye to adjust for dividing into two parts
+    # drawing over #eyeball with red
+        cv2.circle(img, (cx, cy), 4, (0, 0, 255), 2)
+    except:
+        pass
+
+
 def nothing(x):
     pass
+
+
 cv2.namedWindow('image')
 cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
 predictor = dlib.shape_predictor('shape_68.dat')
