@@ -1,13 +1,16 @@
 import cv2
-import numpy as np
-import cv2
 import dlib
+import numpy as np
 
 
 def shape_to_np(shape, dtype="int"):
+    # initialize the list of (x, y)-coordinates
     coords = np.zeros((68, 2), dtype=dtype)
+    # loop over the 68 facial landmarks and convert them
+    # to a 2-tuple of (x, y)-coordinates
     for i in range(0, 68):
         coords[i] = (shape.part(i).x, shape.part(i).y)
+    # return the list of (x, y)-coordinates
     return coords
 
 
@@ -22,36 +25,33 @@ def contouring(thresh, mid, img, right=False):
     cnts, _ = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     try:
-        # finding contour with #maximum area
         cnt = max(cnts, key=cv2.contourArea)
         M = cv2.moments(cnt)
         cx = int(M['m10']/M['m00'])
         cy = int(M['m01']/M['m00'])
         if right:
-            cx += mid  # Adding value of mid to x coordinate of centre of #right eye to adjust for dividing into two parts
-    # drawing over #eyeball with red
+            cx += mid
         cv2.circle(img, (cx, cy), 4, (0, 0, 255), 2)
     except:
         pass
 
 
-predictor = dlib.shape_predictor('shape_68.dat')
 detector = dlib.get_frontal_face_detector()
-left = [36, 37, 38, 39, 40, 41]  # keypoint indices for left eye
-right = [42, 43, 44, 45, 46, 47]  # keypoint indices for right eye
+predictor = dlib.shape_predictor('shape_68.dat')
+left = [36, 37, 38, 39, 40, 41]
+right = [42, 43, 44, 45, 46, 47]
 cap = cv2.VideoCapture(0)
 ret, img = cap.read()
 thresh = img.copy()
-cv2.namedWindow('Live')
-kernel = np.ones((9, 9), np.uint8)
 cv2.namedWindow('image')
-cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
+kernel = np.ones((9, 9), np.uint8)
 
 
 def nothing(x):
     pass
 
 
+cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
 while (True):
     ret, img = cap.read()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -70,14 +70,19 @@ while (True):
         eyes_gray = cv2.cvtColor(eyes, cv2.COLOR_BGR2GRAY)
         threshold = cv2.getTrackbarPos('threshold', 'image')
         _, thresh = cv2.threshold(eyes_gray, threshold, 255, cv2.THRESH_BINARY)
-        thresh = cv2.erode(thresh, None, iterations=2)
-        thresh = cv2.dilate(thresh, None, iterations=4)
-        thresh = cv2.medianBlur(thresh, 3)
-        mid = (shape[39][0] + shape[42][0]) // 2
+        thresh = cv2.erode(thresh, None, iterations=2)  # 1
+        thresh = cv2.dilate(thresh, None, iterations=4)  # 2
+        thresh = cv2.medianBlur(thresh, 3)  # 3
+        thresh = cv2.bitwise_not(thresh)
         contouring(thresh[:, 0:mid], mid, img)
         contouring(thresh[:, mid:], mid, img, True)
-    cv2.imshow('Live', img)
+        # for (x, y) in shape[36:48]:
+        #     cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
+    # show the image with the face detections + facial landmarks
+    cv2.imshow('eyes', img)
+    cv2.imshow("image", thresh)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
 cap.release()
 cv2.destroyAllWindows()
