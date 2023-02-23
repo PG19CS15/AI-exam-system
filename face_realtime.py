@@ -7,6 +7,9 @@ thresh = img.copy()
 cv2.namedWindow('Live')
 kernel = np.ones((9, 9), np.uint8)
 
+def nothing(x):
+    pass
+
 while (True):
     cv2.imshow('Live', img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
