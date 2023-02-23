@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import cv2
 import dlib
@@ -17,13 +18,6 @@ def eye_on_mask(mask, side):
     return mask
 
 
-cap = cv2.VideoCapture(0)
-ret, img = cap.read()
-thresh = img.copy()
-cv2.namedWindow('Live')
-kernel = np.ones((9, 9), np.uint8)
-
-
 def contouring(thresh, mid, img, right=False):
     cnts, _ = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -41,16 +35,23 @@ def contouring(thresh, mid, img, right=False):
         pass
 
 
-def nothing(x):
-    pass
-
-
-cv2.namedWindow('image')
-cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
 predictor = dlib.shape_predictor('shape_68.dat')
 detector = dlib.get_frontal_face_detector()
 left = [36, 37, 38, 39, 40, 41]  # keypoint indices for left eye
 right = [42, 43, 44, 45, 46, 47]  # keypoint indices for right eye
+cap = cv2.VideoCapture(0)
+ret, img = cap.read()
+thresh = img.copy()
+cv2.namedWindow('Live')
+kernel = np.ones((9, 9), np.uint8)
+cv2.namedWindow('image')
+cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
+
+
+def nothing(x):
+    pass
+
+
 while (True):
     ret, img = cap.read()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -72,6 +73,9 @@ while (True):
         thresh = cv2.erode(thresh, None, iterations=2)
         thresh = cv2.dilate(thresh, None, iterations=4)
         thresh = cv2.medianBlur(thresh, 3)
+        mid = (shape[39][0] + shape[42][0]) // 2
+        contouring(thresh[:, 0:mid], mid, img)
+        contouring(thresh[:, mid:], mid, img, True)
     cv2.imshow('Live', img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
