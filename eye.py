@@ -2,6 +2,20 @@ import numpy as np
 import cv2
 import dlib
 
+
+def shape_to_np(shape, dtype="int"):
+    coords = np.zeros((68, 2), dtype=dtype)
+    for i in range(0, 68):
+        coords[i] = (shape.part(i).x, shape.part(i).y)
+    return coords
+
+
+for (i, rect) in enumerate(rects):
+    shape = predictor(gray, rect)
+    shape = shape_to_np(shape)
+    for (x, y) in shape:
+        cv2.circle(img, (x, y), 2, (0, 0, 255), -1)
+
 cap = cv2.VideoCapture(0)
 ret, img = cap.read()
 thresh = img.copy()
@@ -13,6 +27,7 @@ def nothing(x):
     pass
 
 
+predictor = dlib.shape_predictor('shape_68.dat')
 detector = dlib.get_frontal_face_detector()
 
 while (True):
