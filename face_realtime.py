@@ -16,7 +16,7 @@ while (True):
     obj = DeepFace.verify(
         img1_path=img, img2_path="database/1.jpg", enforce_detection=False)
     print("Face verification : ", obj['verified'])
-    if cv2.waitKey(1) & 0xFF == ord('x'):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 cap.release()
 cv2.destroyAllWindows()
