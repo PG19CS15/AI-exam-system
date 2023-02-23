@@ -1,6 +1,8 @@
 import cv2
 import dlib
 import numpy as np
+i = 0
+cheat = 0
 
 
 def shape_to_np(shape, dtype="int"):
@@ -38,11 +40,14 @@ def contouring(thresh, mid, img, right=False):
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_68.dat')
+
 left = [36, 37, 38, 39, 40, 41]
 right = [42, 43, 44, 45, 46, 47]
+
 cap = cv2.VideoCapture(0)
 ret, img = cap.read()
 thresh = img.copy()
+
 cv2.namedWindow('image')
 kernel = np.ones((9, 9), np.uint8)
 
@@ -52,11 +57,13 @@ def nothing(x):
 
 
 cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
+
 while (True):
     ret, img = cap.read()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rects = detector(gray, 1)
     for rect in rects:
+
         shape = predictor(gray, rect)
         shape = shape_to_np(shape)
         mask = np.zeros(img.shape[:2], dtype=np.uint8)
@@ -76,6 +83,14 @@ while (True):
         thresh = cv2.bitwise_not(thresh)
         contouring(thresh[:, 0:mid], mid, img)
         contouring(thresh[:, mid:], mid, img, True)
+        print("x= ", shape[0][0], " y= ", shape[0][1])
+        if (i == 0):
+            x1 = shape[0][0]
+            y1 = shape[0][1]
+        i = i+1
+        if (shape[0][0] not in range(x1-150, x1+150)):
+            print('Limit exceeded')
+            cheat = cheat+1
         # for (x, y) in shape[36:48]:
         #     cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
     # show the image with the face detections + facial landmarks
