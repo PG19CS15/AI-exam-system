@@ -35,6 +35,9 @@ predictor = dlib.shape_predictor('shape_68.dat')
 left = [36, 37, 38, 39, 40, 41]
 right = [42, 43, 44, 45, 46, 47]
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
+
 ret, img = cap.read()
 thresh = img.copy()
 cv2.namedWindow('image')
