@@ -3,6 +3,8 @@ import dlib
 import numpy as np
 i = 0
 cheat = 0
+
+
 def shape_to_np(shape, dtype="int"):
     # initialize the list of (x, y)-coordinates
     coords = np.zeros((68, 2), dtype=dtype)
@@ -12,11 +14,15 @@ def shape_to_np(shape, dtype="int"):
         coords[i] = (shape.part(i).x, shape.part(i).y)
     # return the list of (x, y)-coordinates
     return coords
+
+
 def eye_on_mask(mask, side):
     points = [shape[i] for i in side]
     points = np.array(points, dtype=np.int32)
     mask = cv2.fillConvexPoly(mask, points, 255)
     return mask
+
+
 def contouring(thresh, mid, img, right=False):
     cnts, _ = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -30,6 +36,8 @@ def contouring(thresh, mid, img, right=False):
         cv2.circle(img, (cx, cy), 4, (0, 0, 255), 2)
     except:
         pass
+
+
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_68.dat')
 left = [36, 37, 38, 39, 40, 41]
@@ -42,8 +50,12 @@ ret, img = cap.read()
 thresh = img.copy()
 cv2.namedWindow('image')
 kernel = np.ones((9, 9), np.uint8)
+
+
 def nothing(x):
     pass
+
+
 # cv2.createTrackbar('threshold', 'image', 0, 255, nothing)
 while (True):
     ret, img = cap.read()
@@ -72,16 +84,15 @@ while (True):
         contouring(thresh[:, 0:mid], mid, img)
         contouring(thresh[:, mid:], mid, img, True)
         print("x= ", shape[0][0], " y= ", shape[0][1])
-        if (i == 0):
-            x1 = shape[0][0]
-            y1 = shape[0][1]
-        i = i+1
-        if (shape[0][0] not in range(x1-150, x1+150)):
+        height, width = img.shape[:2]
+
+        if (shape[0][0] not in range(240-150, 240+150)):
             print('Limit exceeded')
             cheat = cheat+1
         # for (x, y) in shape[36:48]:
         #     cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
     # show the image with the face detections + facial landmarks
+
     cv2.imshow('eyes', img)
     cv2.imshow("image", thresh)
     if cv2.waitKey(1) & 0xFF == ord('q'):
