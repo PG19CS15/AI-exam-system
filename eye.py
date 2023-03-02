@@ -61,6 +61,9 @@ while (True):
     ret, img = cap.read()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rects = detector(gray, 1)
+    num_faces = len(rects)
+    if num_faces > 1:
+        print("More than one face detected!")
     for rect in rects:
         shape = predictor(gray, rect)
         shape = shape_to_np(shape)
