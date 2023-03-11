@@ -17,6 +17,7 @@ from keras.layers import (
 from keras.regularizers import l2
 import wget
 
+
 def load_darknet_weights(model, weights_file):
     # Open the weights file
     wf = open(weights_file, 'rb')
@@ -146,7 +147,6 @@ def Darknet(name=None):
     return tf.keras.Model(inputs, (x_36, x_61, x), name=name)
 
 
-
 def YoloConv(filters, name=None):
 
     def yolo_conv(x_in):
@@ -265,3 +265,43 @@ def YoloV3(size=None, channels=3, anchors=yolo_anchors,
                      name='yolo_nms')((boxes_0[:3], boxes_1[:3], boxes_2[:3]))
 
     return Model(inputs, outputs, name='yolov3')
+
+
+yolo = YoloV3()
+load_darknet_weights(yolo, 'models/yolov3.weights')
+
+cap = cv2.VideoCapture(0)
+
+
+while (True):
+    ret, image = cap.read()
+    if ret == False:
+        break
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (320, 320))
+    img = img.astype(np.float32)
+    img = np.expand_dims(img, 0)
+    img = img / 255
+    class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
+    boxes, scores, classes, nums = yolo(img)
+    count = 0
+
+    for i in range(nums[0]):
+        if int(classes[0][i] == 0):
+            count += 1
+        if int(classes[0][i] == 67):
+            print('Mobile Phone detected')
+    if count == 0:
+        print('No person detected')
+    elif count > 1:
+        print('More than one person detected')
+
+    image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
+
+    cv2.imshow('Prediction', image)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+
+cap.release()
+cv2.destroyAllWindows()
