@@ -40,10 +40,14 @@ while True:
         is_recording = True
         print('Recording started...')
 
+    elif key == ord('s'):
+        is_recording = False
+        print('Recording stopped.')
+
     if is_recording:
         out.write(frame)
         wf.writeframes(audio_data)
-    
+
     elif key == ord('q'):
         break
 
@@ -67,4 +71,3 @@ final_clip.write_videofile('output1.mp4')
 
 video_clip.close()
 audio_clip.close()
-
