@@ -3,6 +3,7 @@ import webrtcvad
 import collections
 import numpy as np
 import scipy.signal as signal
+import noisereduce as nr
 
 # initialize pyaudio and open stream
 p = pyaudio.PyAudio()
@@ -18,11 +19,11 @@ stream = p.open(format=pyaudio.paInt16,
                 channels=1,
                 rate=8000,
                 input=True,
-                frames_per_buffer=80,
+                frames_per_buffer=160,
                 input_device_index=i) # replace DEVICE_INDEX with desired device index
 
 # initialize VAD
-vad = webrtcvad.Vad(2)
+vad = webrtcvad.Vad(3)
 frames = collections.deque()
 
 # Define bandpass filter parameters
@@ -33,14 +34,33 @@ filter_order = 4  # Filter order
 # Create bandpass filter
 b, a = signal.butter(filter_order, [low_freq / (8000/2), high_freq / (8000/2)], 'band')
 
+# Define noise reduction parameters
+hop_length = 256
+n_fft = 512
+
 while True:
-    # read audio data from stream
-    data = stream.read(80) # change this to match frames_per_buffer
-    # convert to numpy array
-    samples = np.frombuffer(data, dtype=np.int16)
-    # apply bandpass filter
-    filtered_samples = signal.filtfilt(b, a, samples)
-    # apply VAD on filtered samples
-    speech = vad.is_speech(filtered_samples.astype(np.int16).tobytes(), 8000)
-    if speech:
-        print("Voice detected!")
+    try:
+        # read audio data from stream
+        data = stream.read(160) # change this to match frames_per_buffer
+        # convert to numpy array
+        samples = np.frombuffer(data, dtype=np.int16)
+        # apply bandpass filter
+        filtered_samples = signal.filtfilt(b, a, samples)
+        # perform noise reduction
+        reduced_noise = nr.reduce_noise(y=filtered_samples, sr=8000, 
+                                    hop_length=hop_length,
+                                    n_fft=n_fft)
+
+
+        # apply VAD on noise-reduced samples
+        speech = vad.is_speech(reduced_noise.astype(np.int16).tobytes(), 8000)
+        if speech:
+            print("Voice detected!")
+    except Exception as e:
+        print(e)
+        break
+
+# stop stream and terminate pyaudio
+stream.stop_stream()
+stream.close()
+p.terminate()
