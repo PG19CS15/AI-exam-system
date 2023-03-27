@@ -47,7 +47,7 @@ while True:
     if is_recording:
         out.write(frame)
         wf.writeframes(audio_data)
-
+    
     elif key == ord('q'):
         break
 
@@ -71,3 +71,5 @@ final_clip.write_videofile('output1.mp4')
 
 video_clip.close()
 audio_clip.close()
+os.remove('output.avi')
+os.remove('output.wav')
