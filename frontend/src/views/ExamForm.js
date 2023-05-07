@@ -22,7 +22,36 @@ const ExamForm = () => {
     const handlePreviousQuestion = () => {
         setCurrentQuestion((prevQuestion) => prevQuestion - 1);
     };
-    
+    useEffect(() => {
+        if (proctoringStarted) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    mediaStreamRef.current = stream;
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                        videoRef.current.play();
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error accessing webcam:', error);
+                });
+        } else {
+            // Stop capturing webcam feed
+            if (mediaStreamRef.current) {
+                const tracks = mediaStreamRef.current.getTracks();
+                tracks.forEach((track) => track.stop());
+            }
+        }
+    }, [proctoringStarted]);
+
+    const startProctoring = () => {
+        const confirmed = window.confirm('Are you sure you want to start the exam?');
+        if (confirmed) {
+            setProctoringStarted(true);
+            setTimeRemaining(60 * 60);
+        }
+    };
+
 
 
 
@@ -38,7 +67,15 @@ const ExamForm = () => {
             }
         };
 
+        fetchQuestions();
+    }, []);
 
+    const handleAnswerChange = (questionId, answer) => {
+        setAnswers((prevAnswers) => ({
+            ...prevAnswers,
+            [questionId]: answer,
+        }));
+    };
 
     const handleSubmit = (e) => {
         const submitconfirmed = window.confirm('Are you sure you want to submit?');
