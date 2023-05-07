@@ -1,0 +1,159 @@
+.container {
+  width:90vw !important;
+  margin: 0 auto;
+  padding-top: 210px;
+  
+}
+.navigation-buttons {
+  display: inline;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.sidebar-title{
+  color:White;
+}
+.webcam-video {
+  width: 300px;
+  margin-top:60px;
+  height: auto;
+  
+}
+
+.previous-button,
+.next-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #536ee7;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.previous-button:disabled,
+.next-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.previous-button:hover,
+.next-button:hover {
+  background-color: #464646;
+}
+.wrapper {
+  display: grid;
+  width:100%;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.sidebar{
+  background-color: #27415f !important;
+  padding:20px;
+  border-radius: 20px;
+}
+.question-column {
+  display: flex;width:100%;border:none;
+  flex-direction: column;border-radius:20px ;
+  min-height: 550px;
+}
+
+.question-buttons {
+  display: inline;
+  flex-wrap: wrap;align-items: flex-start; 
+}
+
+.question-button {
+  margin-right: 10px;
+  width: 50px;
+  height:50px;
+  border-radius:10px;
+  margin-bottom: 10px;
+  padding: 0;
+  border: none;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  color:rgb(44, 44, 44);
+  
+}
+.timer-row{
+  width:100%;
+  align-items: center;
+}
+.question-button:hover{
+  background-color: #797979;
+  color:white;
+}
+
+.question-button.active {
+  background-color: #1a9141;
+  color:white;
+  border-radius: 300px;
+  transform: scale(1.1);
+}
+
+.question-container {border-radius:10px;
+  border:none;
+  padding: 50px;width:100%;
+  align-items: start !important;
+ color: #272727 !important;
+ min-height:550px;
+  background-color: hsl(253, 100%, 94%);text-align: left;
+}
+
+.question-text {
+  margin-bottom: 10px;
+  text-align: left; /* Align the question text to the left */
+}
+
+.options-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.options-list li {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.options-list li input[type="radio"] {
+  margin-right: 10px;
+}
+
+.options-list li label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+
+.submit-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.submit-button {
+  padding: 10px 20px;
+  background-color: #14ac4e;
+  border-radius: 10px;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.exam-ended-container {
+  padding: 20px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+}
+
+.end-exam-button {
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}

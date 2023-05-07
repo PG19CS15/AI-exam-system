@@ -1,0 +1,26 @@
+.test-rules {
+  margin: 20px;
+}
+ul{
+    list-style-type: none;
+}
+.rules-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.rules-list {
+  margin-top: 10px;
+  counter-reset: rule-counter;
+}
+
+.rules-list li {
+  counter-increment: rule-counter;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.rules-list li::before {
+  content: counter(rule-counter) ". ";
+  font-weight: bold;
+}
