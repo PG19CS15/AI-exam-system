@@ -108,7 +108,70 @@ const ExamForm = () => {
             setProctoringStarted(false);
         }
     };
-    
+    useEffect(() => {
+        // Automatically submit the exam when the timer ends
+        if (timeRemaining === 0 && proctoringStarted) {
+            handleSubmit(); // Call the handleSubmit function to submit the exam
+        }
+    }, [timeRemaining, proctoringStarted]);
+
+    useEffect(() => {
+        // Start the timer when proctoring starts
+        if (proctoringStarted) {
+            const timer = setInterval(() => {
+                setTimeRemaining((prevTime) => prevTime - 1);
+            }, 1000);
+
+            return () => {
+                // Clean up the timer when proctoring ends or component unmounts
+                clearInterval(timer);
+            };
+        }
+    }, [proctoringStarted]);
+    const handleEndExam = () => {
+
+        fetch('http://localhost:8000/api/end-exam/', {
+            method: 'POST',
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                // Handle the response from the backend
+                console.log('Exam ended:', data.message);
+            });
+        stopProctoring();
+        console.log('Proctoring ended');
+    };
+
+    const stopProctoring = () => {
+        // Stop capturing webcam feed
+        if (mediaStreamRef.current) {
+            const tracks = mediaStreamRef.current.getTracks();
+            tracks.forEach((track) => track.stop());
+            console.log("entered track stop")
+        }
+
+        // Add any additional logic to stop the proctoring process
+
+        setProctoringStarted(false); // Set proctoringStarted state to false
+    };
+
+    const formatTime = (timeInSeconds) => {
+        const hours = Math.floor(timeInSeconds / 3600);
+        const minutes = Math.floor((timeInSeconds % 3600) / 60);
+        const seconds = timeInSeconds % 60;
+
+        const formattedHours = hours.toString().padStart(2, '0');
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        const formattedSeconds = seconds.toString().padStart(2, '0');
+
+        return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    };
+
+
+
+    const handleQuestionClick = (index) => {
+        setCurrentQuestion(index);
+    };
     return (
 
         <div className="container">
