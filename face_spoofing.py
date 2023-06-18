@@ -71,7 +71,7 @@ while True:
 
         cv2.rectangle(img, (x, y), (x1, y1), (255, 0, 0), 2)
 
-        if ensemble_prediction < 0.46:
+        if ensemble_prediction < 0.5:
             text = "Fake"
             color = (0, 0, 255)
         else:
