@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import joblib
 from face_detector import get_face_detector, find_faces
+import torch
+from torchvision import transforms
+from Model import DeePixBiS
 
 def calc_hist(img):
     histogram = [0] * 3
@@ -13,10 +16,23 @@ def calc_hist(img):
 
 face_model = get_face_detector()
 clf = joblib.load('models/face_spoofing.pkl')
+
+# Initialize and load the anti-spoofing model
+model = DeePixBiS()
+model.load_state_dict(torch.load('models/DeePixBiS.pth'))
+model.eval()
+
+tfms = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
 cap = cv2.VideoCapture(0)
 
 sample_number = 10
-measures = np.zeros(sample_number, dtype=np.float)
+measures = np.zeros(sample_number, dtype=float)
 
 while True:
     ret, img = cap.read()
@@ -26,8 +42,10 @@ while True:
 
     height, width = img.shape[:2]
     for x, y, x1, y1 in faces:
-
         roi = img[y:y1, x:x1]
+
+        if roi.size == 0:
+            continue
 
         img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
         img_luv = cv2.cvtColor(roi, cv2.COLOR_BGR2LUV)
@@ -41,9 +59,19 @@ while True:
         prob = clf.predict_proba(feature_vector)[0][1]
         measures[0] = prob
 
+        # Pass the face region through the anti-spoofing model
+        faceRegion = tfms(roi)
+        faceRegion = faceRegion.unsqueeze(0)
+        with torch.no_grad():
+            mask, _ = model.forward(faceRegion)
+            res = torch.mean(mask).item()
+
+        # Ensemble prediction
+        ensemble_prediction = (res + np.mean(measures)) / 2.0
+
         cv2.rectangle(img, (x, y), (x1, y1), (255, 0, 0), 2)
 
-        if np.mean(measures) >= 0.7:
+        if ensemble_prediction < 0.46:
             text = "Fake"
             color = (0, 0, 255)
         else:
@@ -51,7 +79,7 @@ while True:
             color = (0, 255, 0)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(img=img, text=text, org=(x, y-5), fontFace=font, fontScale=0.9,
+        cv2.putText(img=img, text=text, org=(x, y - 5), fontFace=font, fontScale=0.9,
                     color=color, thickness=2, lineType=cv2.LINE_AA)
 
     cv2.imshow('img_rgb', img)
@@ -60,3 +88,4 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
